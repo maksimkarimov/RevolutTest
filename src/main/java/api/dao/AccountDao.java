@@ -1,23 +1,15 @@
 package api.dao;
 
 import api.models.Account;
+import org.apache.commons.dbutils.QueryRunner;
 
-import javax.inject.Inject;
-import javax.sql.DataSource;
-import java.sql.ResultSet;
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-public class AccountDao {
-
-    @Inject
-    private DataSource dataSource;
-
-    public Account getById(Long id) throws SQLException {
-        Statement statement = dataSource.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select * from ACCOUNT where id = " + id);
-
-        return resultSet.
+public class AccountDao extends BasicDao<Account> {
+    public AccountDao() {
+        super(Account.class);
     }
+
+
 }

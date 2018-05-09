@@ -9,7 +9,7 @@ import org.h2.jdbcx.JdbcDataSource;
 
 import javax.sql.DataSource;
 
-public class GuiceModule extends AbstractModule {
+public class GuiceModuleTest extends AbstractModule {
     @Override
     protected void configure() {
         bind(AccountDao.class).in(Singleton.class);
@@ -19,7 +19,7 @@ public class GuiceModule extends AbstractModule {
     @Provides
    public DataSource createDataSource() {
         DataSource dataSource = new JdbcDataSource();
-        ((JdbcDataSource) dataSource).setURL("jdbc:h2:mem:revolut;MVCC=TRUE");
+        ((JdbcDataSource) dataSource).setURL("jdbc:h2:mem:revolut_test;MVCC=TRUE");
         ((JdbcDataSource) dataSource).setUser("sa");
         ((JdbcDataSource) dataSource).setPassword("sa");
 

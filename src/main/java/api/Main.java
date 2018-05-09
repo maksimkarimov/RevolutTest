@@ -6,6 +6,10 @@ import java.sql.SQLException;
 
 import javax.ws.rs.core.UriBuilder;
 
+import api.controllers.AccountController;
+import api.controllers.TransferController;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -17,15 +21,23 @@ public class Main {
     private final static int port = 8080;
     private final static String host = "http://localhost/";
 
+
     public static void main(String[] args) throws SQLException {
         System.out.println("Try to start server.");
         URI baseUri = UriBuilder.fromUri(host).port(port).build();
-        ResourceConfig config = new ResourceConfig(TestController.class);
+        ResourceConfig config = new ResourceConfig(TestController.class, AccountController.class, TransferController.class);
         JdkHttpServerFactory.createHttpServer(baseUri, config);
         System.out.println("Server started.");
-        System.out.println("Try to start to start H2 database.");
+        System.out.println("Try to start H2 database.");
         startH2DB();
         System.out.println("H2 started.");
+
+        configureGuice();
+        System.out.println("Application ready to work.");
+    }
+
+    private static void configureGuice() {
+        Guice.createInjector(new GuiceModule());
     }
 
     private static void startH2DB() throws SQLException {
