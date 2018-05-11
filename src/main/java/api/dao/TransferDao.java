@@ -1,5 +1,6 @@
 package api.dao;
 
+import api.enums.ResponseError;
 import api.models.Account;
 import api.models.Transfer;
 import api.response.TransferResponse;
@@ -20,13 +21,25 @@ public class TransferDao extends BasicDao<Transfer>{
         QueryRunner runner = new QueryRunner();
         connection.setAutoCommit(false);
 
+        if (fromId == null || toId == null || amount == null) {
+            return new TransferResponse(false, ResponseError.INSUFFICIENT_DATA);
+        }
+
+        if (fromId.equals(toId)) {
+            return new TransferResponse(false, ResponseError.TRANSFER_ACCOUNTS_EQUALS);
+        }
+
         try {
             String sql = "select * from account where id = ? FOR UPDATE";
             Account from = runner.query(connection, sql, new BeanHandler<>(Account.class), fromId);
             Account to = runner.query(connection, sql, new BeanHandler<>(Account.class), toId);
 
+            if (from == null || to == null) {
+                return new TransferResponse(false, ResponseError.ACCOUNT_NOT_FOUND);
+            }
+
             if (from.getBalance() < amount) {
-                return new TransferResponse(false, "Not enough money for transfer");
+                return new TransferResponse(false, ResponseError.NOT_ENOUGH_MONEY);
             }
 
             sql = "update account set balance = ? where id = ?";
@@ -39,7 +52,7 @@ public class TransferDao extends BasicDao<Transfer>{
 
         }catch(Exception e) {
             connection.rollback();
-            return new TransferResponse(false, e.getMessage());
+            return new TransferResponse(false, ResponseError.TRANSACTION_ROLLEDBACK);
         }finally {
             connection.setAutoCommit(true);
         }

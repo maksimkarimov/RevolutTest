@@ -1,6 +1,6 @@
 package api.controllers;
 
-import api.GuiceModule;
+import api.config.GuiceModule;
 import api.dao.TransferDao;
 import api.models.Transfer;
 import api.response.TransferResponse;
@@ -31,7 +31,7 @@ public class TransferController {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public TransferResponse makeTransfer(@QueryParam("fromId") Long fromId, @QueryParam("toId") Long toId, @QueryParam("amount") Double amount) throws SQLException{
+    public TransferResponse makeTransfer(@FormParam("fromId") Long fromId, @FormParam("toId") Long toId, @FormParam("amount") Double amount) throws SQLException {
         return transferDao.makeTransfer(fromId, toId, amount);
     }
 }

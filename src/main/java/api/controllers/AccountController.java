@@ -1,6 +1,6 @@
 package api.controllers;
 
-import api.GuiceModule;
+import api.config.GuiceModule;
 import api.dao.AccountDao;
 import api.models.Account;
 import com.google.inject.Guice;

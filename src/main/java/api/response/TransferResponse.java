@@ -1,12 +1,14 @@
 package api.response;
 
+import api.enums.ResponseError;
+
 public class TransferResponse {
     private boolean done;
-    private String errorMessage;
+    private ResponseError error;
 
-    public TransferResponse(boolean done, String errorMessage) {
+    public TransferResponse(boolean done, ResponseError error) {
         this.done = done;
-        this.errorMessage = errorMessage;
+        this.error = error;
     }
 
     public boolean isDone() {
@@ -17,11 +19,11 @@ public class TransferResponse {
         this.done = done;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public ResponseError getError() {
+        return error;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setError(ResponseError error) {
+        this.error = error;
     }
 }

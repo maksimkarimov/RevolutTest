@@ -1,7 +1,9 @@
 package api;
 
+import api.config.GuiceModuleTest;
 import api.dao.AccountDao;
 import api.dao.TransferDao;
+import api.enums.ResponseError;
 import api.models.Account;
 import api.response.TransferResponse;
 import com.google.inject.Guice;
@@ -22,19 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class TransferTest {
+public class ApiTest {
 
-    private Injector injector;
     private AccountDao accountDao;
     private TransferDao transferDao;
 
     @Before
     public void init() throws SQLException {
-        injector = Guice.createInjector(new GuiceModuleTest());
+        Injector injector = Guice.createInjector(new GuiceModuleTest());
         transferDao = injector.getInstance(TransferDao.class);
         accountDao = injector.getInstance(AccountDao.class);
 
-        startH2DB();
+        dbMigration();
     }
 
     @After
@@ -46,7 +47,7 @@ public class TransferTest {
     }
 
 
-    private void startH2DB() throws SQLException {
+    private void dbMigration() throws SQLException {
         JdbcConnectionPool cp = JdbcConnectionPool.create(
                 "jdbc:h2:mem:revolut_test", "sa", "sa");
         String migrationFileName = "/migration/start_migration.sql";
@@ -61,7 +62,28 @@ public class TransferTest {
 
     @Test
     public void checkDBAccounts() throws SQLException {
-        Assert.assertEquals(accountDao.getAll().size(), 2);
+        Assert.assertEquals(2, accountDao.getAll().size());
+    }
+
+    @Test
+    public void checkTransferWithNotExistAccount() throws SQLException {
+        TransferResponse response = transferDao.makeTransfer(1L, 1000L, 500D);
+        Assert.assertFalse(response.isDone());
+        Assert.assertEquals(ResponseError.ACCOUNT_NOT_FOUND, response.getError());
+    }
+
+    @Test
+    public void checkTransferWithoutAccount() throws SQLException {
+        TransferResponse response = transferDao.makeTransfer(null, 1000L, 500D);
+        Assert.assertFalse(response.isDone());
+        Assert.assertEquals(ResponseError.INSUFFICIENT_DATA, response.getError());
+    }
+
+    @Test
+    public void checkTransferToYourself() throws SQLException {
+        TransferResponse response = transferDao.makeTransfer(1L, 1L, 500D);
+        Assert.assertFalse(response.isDone());
+        Assert.assertEquals(ResponseError.TRANSFER_ACCOUNTS_EQUALS, response.getError());
     }
 
     @Test
@@ -88,7 +110,7 @@ public class TransferTest {
         TransferResponse transferResponse = transferDao.makeTransfer(from.getId(), to.getId(), 5000D);
 
         Assert.assertFalse(transferResponse.isDone());
-        Assert.assertEquals(transferResponse.getErrorMessage(), "Not enough money for transfer");
+        Assert.assertEquals(ResponseError.NOT_ENOUGH_MONEY, transferResponse.getError());
     }
 
     @Test
@@ -101,8 +123,6 @@ public class TransferTest {
         List<Future<TransferResponse>> futuresFromOneToTwo = new ArrayList<>();
         List<Future<TransferResponse>> futuresFromTwoToOne = new ArrayList<>();
 
-        List<TransferResponse> fromOneToTwo = new ArrayList<>();
-        List<TransferResponse> fromTwoToOne = new ArrayList<>();
         Account oneOld = accountDao.getById(1L);
         Account twoOld = accountDao.getById(2L);
 
@@ -111,24 +131,11 @@ public class TransferTest {
             futuresFromOneToTwo.add(executor.submit(() -> transferDao.makeTransfer(oneOld.getId(), twoOld.getId(), fromOneToTwoAmount)));
             sleepRandomMillis(0, 100);
             futuresFromTwoToOne.add(executor.submit(() -> transferDao.makeTransfer(twoOld.getId(), oneOld.getId(), fromTwoToOneAmount)));
-            sleepRandomMillis(100, 500);
+            sleepRandomMillis(50, 500);
         }
 
-        for (Future<TransferResponse> future : futuresFromOneToTwo) {
-            try {
-                fromOneToTwo.add(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        for (Future<TransferResponse> future : futuresFromTwoToOne) {
-            try {
-                fromTwoToOne.add(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                System.out.println(e.getMessage());
-            }
-        }
+        List<TransferResponse> fromOneToTwo = fromFuturesToResponse(futuresFromOneToTwo);
+        List<TransferResponse> fromTwoToOne = fromFuturesToResponse(futuresFromTwoToOne);
 
         Account oneNew = accountDao.getById(1L);
         Account twoNew = accountDao.getById(2L);
@@ -141,6 +148,19 @@ public class TransferTest {
         double expectedBalanceTwo = (twoOld.getBalance() + (fromOneToTwoDone * fromOneToTwoAmount)) - (fromTwoToOneDone * fromTwoToOneAmount);
         Assert.assertEquals(expectedBalanceTwo, twoNew.getBalance(), 0);
 
+    }
+
+    private List<TransferResponse> fromFuturesToResponse(List<Future<TransferResponse>> futures) {
+        ArrayList<TransferResponse> list = new ArrayList<>();
+        for (Future<TransferResponse> future : futures) {
+            try {
+                list.add(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return list;
     }
 
     private void sleepRandomMillis(int min, int max) {

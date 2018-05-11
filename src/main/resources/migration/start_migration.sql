@@ -1,8 +1,7 @@
 CREATE TABLE ACCOUNT(
 ID INT AUTO_INCREMENT PRIMARY KEY,
 BALANCE DOUBLE,
-NAME VARCHAR(255),
-LOCK INT DEFAULT 0
+NAME VARCHAR(255)
 );
 
 insert into ACCOUNT(balance, name) values (100500, 'Account1');
@@ -13,7 +12,7 @@ ID INT AUTO_INCREMENT PRIMARY KEY,
 fromAccountId INT,
 toAccountId INT,
 amount DOUBLE,
-date Date,
+date TIMESTAMP,
 
   foreign key (fromAccountId) references ACCOUNT(id),
   foreign key (toAccountId) references ACCOUNT(id)
