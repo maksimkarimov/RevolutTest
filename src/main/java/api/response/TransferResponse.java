@@ -3,10 +3,10 @@ package api.response;
 import api.enums.ResponseError;
 
 public class TransferResponse {
-    private boolean done;
-    private ResponseError error;
+    private final boolean done;
+    private final ResponseError error;
 
-    public TransferResponse(boolean done, ResponseError error) {
+    public TransferResponse(final boolean done, final ResponseError error) {
         this.done = done;
         this.error = error;
     }
@@ -15,15 +15,7 @@ public class TransferResponse {
         return done;
     }
 
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-
     public ResponseError getError() {
         return error;
-    }
-
-    public void setError(ResponseError error) {
-        this.error = error;
     }
 }

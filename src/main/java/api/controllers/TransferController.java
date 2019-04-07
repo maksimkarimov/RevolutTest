@@ -1,11 +1,9 @@
 package api.controllers;
 
-import api.config.GuiceModule;
-import api.dao.TransferDao;
 import api.models.Transfer;
 import api.response.TransferResponse;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import api.service.TransferService;
+import com.google.inject.Inject;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,23 +13,34 @@ import java.util.List;
 @Path("transfer")
 public class TransferController {
 
-    private TransferDao transferDao;
+    private final TransferService transferService;
 
-    public TransferController() {
-        Injector injector = Guice.createInjector(new GuiceModule());
-        transferDao = injector.getInstance(TransferDao.class);
+    @Inject
+    public TransferController(TransferService transferService) {
+        this.transferService = transferService;
     }
 
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Transfer> getAll() throws SQLException {
-        return transferDao.getAll();
+        return transferService.getAll();
     }
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public TransferResponse makeTransfer(@FormParam("fromId") Long fromId, @FormParam("toId") Long toId, @FormParam("amount") Double amount) throws SQLException {
-        return transferDao.makeTransfer(fromId, toId, amount);
+    public TransferResponse makeTransfer(@FormParam("fromId") final Long fromId, @FormParam("toId") final Long toId,
+                                         @FormParam("amount") final Long amount) throws SQLException {
+        return transferService.makeTransfer(fromId, toId, amount);
+    }
+
+    @PUT
+    public void update() {
+        throw new NotSupportedException();
+    }
+
+    @DELETE
+    public void delete() {
+        throw new NotSupportedException();
     }
 }

@@ -9,6 +9,7 @@ public enum ResponseError {
     ACCOUNT_NOT_FOUND(2, "Account not found"),
     INSUFFICIENT_DATA(3, "Not all required parameters are filled in"),
     TRANSFER_ACCOUNTS_EQUALS(4, "You can't transfer money to the same account which you are charged"),
+    TRANSFER_LESS_THEN_ZERO(5, "You can't transfer zero or less"),
     TRANSACTION_ROLLEDBACK(10, "Transaction rolled back");
 
     private int code;

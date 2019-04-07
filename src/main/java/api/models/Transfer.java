@@ -7,7 +7,7 @@ public class Transfer {
     private Long id;
     private Long fromAccountId;
     private Long toAccountId;
-    private Double amount;
+    private Long amount;
     private Date date;
 
     public Long getId() {
@@ -34,11 +34,11 @@ public class Transfer {
         this.toAccountId = toAccountId;
     }
 
-    public Double getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 

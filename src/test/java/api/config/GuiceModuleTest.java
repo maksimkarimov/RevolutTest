@@ -17,8 +17,8 @@ public class GuiceModuleTest extends AbstractModule {
     }
 
     @Provides
-   public DataSource createDataSource() {
-        DataSource dataSource = new JdbcDataSource();
+    public DataSource createDataSource() {
+        final DataSource dataSource = new JdbcDataSource();
         ((JdbcDataSource) dataSource).setURL("jdbc:h2:mem:revolut_test;MVCC=TRUE");
         ((JdbcDataSource) dataSource).setUser("sa");
         ((JdbcDataSource) dataSource).setPassword("sa");
